@@ -10,6 +10,7 @@ const userRoutes = require('./routes/userRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const utilityRoutes = require('./routes/utilityRoutes'); 
 const friendRequestRoutes = require('./routes/friendRequestRoutes');
 const { jwtMiddleware } = require('./middlewares/authMiddleware');
 const moderateContent = require('./middlewares/contentModerationMiddleware');
@@ -49,6 +50,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/utilities', utilityRoutes); 
 app.use('/api/friend-requests', friendRequestRoutes);
 
 // Serve static files securely
