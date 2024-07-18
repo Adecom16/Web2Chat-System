@@ -10,7 +10,7 @@ exports.sendMessage = async (req, res) => {
     const message = new Message({
       sender: req.user.userId,
       content: encryptedContent ? encryptedContent.encryptedData : null,
-      file,
+      file: file ? file.path : null,
       chatId,
     });
     await message.save();
@@ -87,24 +87,24 @@ exports.removeReaction = async (req, res) => {
   }
 };
 
-
-exports.markAsRead = async (req, res) => {
+exports.markMessageAsRead = async (req, res) => {
   const { messageId } = req.params;
-  const userId = req.user.id;
+  const userId = req.user.userId;
 
   try {
     const message = await Message.findById(messageId);
+    if (!message) return res.status(404).json({ error: 'Message not found' });
+
     if (!message.readBy.includes(userId)) {
       message.readBy.push(userId);
       await message.save();
     }
+
     res.status(200).json(message);
   } catch (error) {
     res.status(500).json({ error: 'Server Error' });
   }
-
 };
-
 
 exports.editMessage = async (req, res) => {
   const { messageId } = req.params;
@@ -125,8 +125,6 @@ exports.editMessage = async (req, res) => {
   }
 };
 
-
-
 exports.deleteMessage = async (req, res) => {
   const { messageId } = req.params;
   const userId = req.user.id;
@@ -139,6 +137,91 @@ exports.deleteMessage = async (req, res) => {
     message.text = 'This message was deleted';
     await message.save();
     res.status(200).json(message);
+  } catch (error) {
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
+exports.replyToMessage = async (req, res) => {
+  const { messageId } = req.params;
+  const { text } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const newMessage = new Message({
+      sender: userId,
+      chatId: req.body.chatId,
+      text,
+      parentMessage: messageId
+    });
+    await newMessage.save();
+    res.status(201).json(newMessage);
+  } catch (error) {
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
+exports.searchMessages = async (req, res) => {
+  const { query, chatId } = req.query;
+
+  try {
+    const messages = await Message.find({
+      chatId,
+      text: { $regex: query, $options: 'i' }
+    }).populate('sender', '-password');
+    res.status(200).json(messages);
+  } catch (error) {
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
+exports.pinMessage = async (req, res) => {
+  const { messageId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const message = await Message.findById(messageId);
+    if (message.sender.toString() !== userId) return res.status(403).json({ error: 'Unauthorized action' });
+
+    message.pinned = true;
+    await message.save();
+    res.status(200).json(message);
+  } catch (error) {
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
+exports.unpinMessage = async (req, res) => {
+  const { messageId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const message = await Message.findById(messageId);
+    if (message.sender.toString() !== userId) return res.status(403).json({ error: 'Unauthorized action' });
+
+    message.pinned = false;
+    await message.save();
+    res.status(200).json(message);
+  } catch (error) {
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
+exports.sendVoiceMessage = async (req, res) => {
+  const { chatId } = req.body;
+  const sender = req.user.userId;
+  const voiceMessageUrl = req.file.path;
+
+  try {
+    const message = new Message({
+      chatId,
+      sender,
+      voiceMessage: voiceMessageUrl,
+      messageType: 'voice'
+    });
+
+    await message.save();
+    res.status(201).json(message);
   } catch (error) {
     res.status(500).json({ error: 'Server Error' });
   }

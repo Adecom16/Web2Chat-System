@@ -1,5 +1,6 @@
 const Group = require('../models/Group');
 const User = require('../models/User');
+const { v4: uuidv4 } = require('uuid');
 
 // Create a new group
 exports.createGroup = async (req, res) => {
@@ -38,5 +39,63 @@ exports.getGroups = async (req, res) => {
   } catch (error) {
     console.error('Error fetching groups:', error);
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Add a member with a role to a group
+exports.addMemberWithRole = async (req, res) => {
+  const { groupId } = req.params;
+  const { userId, role } = req.body;
+
+  try {
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ error: 'Group not found' });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    group.members.push({ user: userId, role });
+    await group.save();
+
+    res.status(200).json(group);
+  } catch (error) {
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
+// Invite a member to a group via email
+exports.inviteToGroup = async (req, res) => {
+  const { groupId } = req.params;
+  const { email } = req.body;
+
+  try {
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ error: 'Group not found' });
+
+    const inviteCode = uuidv4();
+    group.invitations.push({ email, inviteCode });
+    await group.save();
+
+    // Send the invite code via email (Email sending logic to be implemented)
+    // Example using nodemailer can be provided if needed
+
+    res.status(200).json({ inviteCode });
+  } catch (error) {
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
+// Update group description
+exports.updateGroupDescription = async (req, res) => {
+  const { groupId } = req.params;
+  const { description } = req.body;
+
+  try {
+    const group = await Group.findByIdAndUpdate(groupId, { description }, { new: true });
+    if (!group) return res.status(404).json({ error: 'Group not found' });
+
+    res.status(200).json(group);
+  } catch (error) {
+    res.status(500).json({ error: 'Server Error' });
   }
 };

@@ -9,18 +9,25 @@ const GroupSchema = new mongoose.Schema({
     type: String
   },
   members: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    role: {
+      type: String,
+      enum: ['admin', 'moderator', 'member'],
+      default: 'member'
+    }
   }],
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  messages: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message'
+  invitations: [{
+    email: {
+      type: String
+    },
+    inviteCode: {
+      type: String,
+      unique: true
+    }
   }]
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Group', GroupSchema);

@@ -24,8 +24,18 @@ const MessageSchema = new mongoose.Schema({
     required: true
   },
   text: {
+    type: String
+  },
+  media: {
+    type: String  // URL to the media file
+  },
+  voiceMessage: {
+    type: String  // URL to the voice message file
+  },
+  messageType: {
     type: String,
-    required: true
+    enum: ['text', 'image', 'video', 'file', 'voice', 'sticker', 'gif'],
+    default: 'text'
   },
   readBy: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -55,6 +65,6 @@ const MessageSchema = new mongoose.Schema({
   updatedAt: {
     type: Date
   }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Message', MessageSchema);

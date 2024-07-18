@@ -3,7 +3,6 @@ const http = require('http');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const socketIo = require('socket.io');
-const mongoose = require('mongoose');
 const User = require('./models/User');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
@@ -13,6 +12,11 @@ const groupRoutes = require('./routes/groupRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const friendRequestRoutes = require('./routes/friendRequestRoutes');
 const { jwtMiddleware } = require('./middlewares/authMiddleware');
+const moderateContent = require('./middlewares/contentModerationMiddleware');
+const upload = require('./middlewares/fileUploadMiddleware');
+const helmet = require('helmet');
+const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 require('dotenv').config();
 
@@ -20,8 +24,8 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-
 // Middleware
+app.use(helmet()); // Add security headers
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -29,6 +33,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 connectDB();
 
 app.use(express.json());
+
+// Rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later."
+});
+
+app.use('/api/', apiLimiter);
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -37,13 +51,21 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/friend-requests', friendRequestRoutes);
 
+// Serve static files securely
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Socket.io setup
+io.use((socket, next) => {
+  jwtMiddleware(socket.request, {}, next);
+});
+
 io.on('connection', (socket) => {
   console.log('New client connected');
-
+  
   socket.on('join', ({ userId, chatId }) => {
     socket.join(chatId);
     console.log(`User ${userId} joined chat ${chatId}`);
-    User.findByIdAndUpdate(userId, { lastSeen: new Date() }, { new: true });
+    User.findByIdAndUpdate(userId, { lastSeen: new Date() }, { new: true }).exec();
   });
 
   socket.on('sendMessage', async (message) => {
@@ -66,7 +88,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Client disconnected');
-    User.findByIdAndUpdate(socket.userId, { lastSeen: new Date() }, { new: true });
+    User.findByIdAndUpdate(socket.request.user.id, { lastSeen: new Date() }, { new: true }).exec();
   });
 });
 

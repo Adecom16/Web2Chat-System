@@ -3,14 +3,20 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, profilePicture, statusMessage, password } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ error: 'Email already in use' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, email, password: hashedPassword });
+    const newUser = new User({ 
+      username, 
+      email, 
+      profilePicture, 
+      statusMessage, 
+      password: hashedPassword 
+    });
     await newUser.save();
     res.status(201).json(newUser);
   } catch (error) {
