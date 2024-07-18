@@ -18,6 +18,12 @@ const UserSchema = new mongoose.Schema({
   profilePicture: {
     type: String
   },
+  roles: {
+    type: [String],
+    enum: ['user', 'admin'],
+    default: ['user']
+  },
+  
   statusMessage: {
     type: String
   },
@@ -52,6 +58,9 @@ const UserSchema = new mongoose.Schema({
       type: String,
       enum: ['everyone', 'contacts', 'no one'],
       default: 'everyone'
+    },
+    fcmToken: {
+      type: String,
     }
   }
 }, { timestamps: true });
