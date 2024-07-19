@@ -8,6 +8,7 @@ const {
   replyToMessage,
   searchMessages,
   sendMessage,
+  getMessages,
   sendVoiceMessage,
   pinMessage,
   unpinMessage
@@ -24,6 +25,7 @@ router.put('/:messageId', jwtMiddleware, editMessage);
 router.delete('/:messageId', jwtMiddleware, deleteMessage);
 router.post('/:messageId/reply', jwtMiddleware, replyToMessage);
 router.get('/search', jwtMiddleware, searchMessages);
+router.get('/:chatId', jwtMiddleware, getMessages);
 router.post('/:messageId/pin', jwtMiddleware, pinMessage);
 router.post('/:messageId/unpin', jwtMiddleware, unpinMessage);
 router.post('/voice', jwtMiddleware, upload.single('voiceMessage'), sendVoiceMessage);

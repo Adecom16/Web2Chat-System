@@ -1,4 +1,5 @@
 const Message = require('../models/Message');
+const emoji = require('node-emoji');
 const Chat = require('../models/Chat');
 const { encrypt, decrypt } = require('../utils/encryption');
 const { sendNotification } = require('../utils/notificationService');
@@ -6,12 +7,17 @@ const { sendNotification } = require('../utils/notificationService');
 exports.sendMessage = async (req, res) => {
   const { content, file, chatId } = req.body;
   try {
-    const encryptedContent = content ? encrypt(content) : null;
+    const contentWithEmojis = emoji.emojify(content);
+    const encryptedContent = content ? encrypt(contentWithEmojis) : null;
+    // const encryptedContent = content ? encrypt(content) : null;
+    const mentionedUsernames = content.match(/@\w+/g) || [];
+    const mentionedUsers = await User.find({ username: { $in: mentionedUsernames.map(u => u.slice(1)) } });
     const message = new Message({
       sender: req.user.userId,
       content: encryptedContent ? encryptedContent.encryptedData : null,
       file: file ? file.path : null,
       chatId,
+      mentions: mentionedUsers.map(user => user._id)
     });
     await message.save();
     await Chat.findByIdAndUpdate(chatId, { $push: { messages: message._id } });
@@ -28,6 +34,19 @@ exports.sendMessage = async (req, res) => {
         });
       }
     });
+
+      // Send push notification to mentioned users
+      mentionedUsers.forEach(user => {
+        if (user._id.toString() !== req.user.userId) {
+          sendNotification(user.fcmToken, {
+            notification: {
+              title: 'You were mentioned',
+              body: content
+            }
+          });
+        }
+      });
+  
 
     res.status(201).json(message);
   } catch (error) {
@@ -59,10 +78,12 @@ exports.reactToMessage = async (req, res) => {
     const message = await Message.findById(messageId);
     const existingReaction = message.reactions.find(r => r.userId.toString() === userId);
 
+    const reactionWithEmoji = emoji.emojify(reaction.type);
+
     if (existingReaction) {
-      existingReaction.type = reaction.type;
+      existingReaction.type = reactionWithEmoji;
     } else {
-      message.reactions.push({ userId, type: reaction.type });
+      message.reactions.push({ userId, type: reactionWithEmoji });
     }
 
     await message.save();
@@ -78,7 +99,9 @@ exports.removeReaction = async (req, res) => {
 
   try {
     const message = await Message.findById(messageId);
-    message.reactions = message.reactions.filter(r => r.userId.toString() !== userId || r.type !== reactionType);
+    const reactionWithEmoji = emoji.emojify(reactionType);
+
+    message.reactions = message.reactions.filter(r => r.userId.toString() !== userId || r.type !== reactionWithEmoji);
     
     await message.save();
     res.status(200).json(message);
@@ -86,6 +109,7 @@ exports.removeReaction = async (req, res) => {
     res.status(500).json({ error: 'Server Error' });
   }
 };
+
 
 exports.markMessageAsRead = async (req, res) => {
   const { messageId } = req.params;
