@@ -6,7 +6,7 @@ const {
   editMessage,
   deleteMessage,
   replyToMessage,
-  syncMessages,
+  syncDrafts,
   searchMessages,
   sendMessage,
   getMessages,
@@ -31,6 +31,6 @@ router.post('/:messageId/pin', jwtMiddleware, pinMessage);
 router.post('/:messageId/unpin', jwtMiddleware, unpinMessage);
 router.post('/voice', jwtMiddleware, upload.single('voiceMessage'), sendVoiceMessage);
 router.post('/send', jwtMiddleware, moderateContent, sendMessage); // Add content moderation to message sending
-router.post('/', jwtMiddleware, syncMessages);  //sync
+router.post('/sync-drafts', jwtMiddleware, syncDrafts);
 
 module.exports = router;

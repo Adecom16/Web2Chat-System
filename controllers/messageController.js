@@ -251,21 +251,24 @@ exports.sendVoiceMessage = async (req, res) => {
   }
 };
 
-exports.syncMessages = async (req, res) => {
-  const messages = req.body;
-
+exports.syncDrafts = async (req, res) => {
+  const { drafts } = req.body;
   try {
-    // Validate incoming messages array
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ error: 'Invalid data format' });
-    }
-
-    // Bulk insert messages
-    const result = await Message.insertMany(messages, { ordered: false });
-
-    res.status(201).json({ message: 'Messages synced successfully', result });
+    const messages = drafts.map(draft => {
+      return new Message({
+        sender: draft.sender,
+        chatId: draft.chatId,
+        text: draft.text,
+        media: draft.media,
+        voiceMessage: draft.voiceMessage,
+        messageType: draft.messageType,
+        mentions: draft.mentions,
+        parentMessage: draft.parentMessage
+      });
+    });
+    const savedMessages = await Message.insertMany(messages);
+    res.status(201).json(savedMessages);
   } catch (error) {
-    console.error('Error syncing messages:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };

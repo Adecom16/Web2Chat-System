@@ -69,7 +69,15 @@ const UserSchema = new mongoose.Schema({
       createdAt: { type: Date, default: Date.now }
     }
   ],
-  blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  emailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationToken: String,
+  emailVerificationExpires: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
