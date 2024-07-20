@@ -1,58 +1,62 @@
 const Message = require('../models/Message');
-const emoji = require('node-emoji');
 const Chat = require('../models/Chat');
+const User = require('../models/User');
+const emoji = require('node-emoji');
 const { encrypt, decrypt } = require('../utils/encryption');
 const { sendNotification } = require('../utils/notificationService');
 
 exports.sendMessage = async (req, res) => {
-  const { content, file, chatId } = req.body;
+  const { text, file, chatId, messageType } = req.body;
+  const sender = req.user.id;
+
   try {
-    const contentWithEmojis = emoji.emojify(content);
-    const encryptedContent = content ? encrypt(contentWithEmojis) : null;
-    // const encryptedContent = content ? encrypt(content) : null;
-    const mentionedUsernames = content.match(/@\w+/g) || [];
+    const contentWithEmojis = emoji.emojify(text || '');
+    const encryptedContent = text ? encrypt(contentWithEmojis) : null;
+    const mentionedUsernames = contentWithEmojis.match(/@\w+/g) || [];
     const mentionedUsers = await User.find({ username: { $in: mentionedUsernames.map(u => u.slice(1)) } });
+
     const message = new Message({
-      sender: req.user.userId,
-      content: encryptedContent ? encryptedContent.encryptedData : null,
-      file: file ? file.path : null,
-      chatId,
+      sender,
+      chat: chatId,
+      text: encryptedContent ? encryptedContent.encryptedData : null,
+      media: file ? file.path : null,
+      messageType,
       mentions: mentionedUsers.map(user => user._id)
     });
     await message.save();
-    await Chat.findByIdAndUpdate(chatId, { $push: { messages: message._id } });
+    await Chat.findByIdAndUpdate(chatId, { latestMessage: message._id, $push: { messages: message._id } });
 
-    // Send push notification
     const chat = await Chat.findById(chatId).populate('users', 'fcmToken');
     chat.users.forEach((user) => {
-      if (user._id.toString() !== req.user.userId) {
+      if (user._id.toString() !== sender) {
         sendNotification(user.fcmToken, {
           notification: {
             title: 'New Message',
-            body: content || 'You have received a new file',
+            body: text || 'You have received a new file',
           },
         });
       }
     });
 
-      // Send push notification to mentioned users
-      mentionedUsers.forEach(user => {
-        if (user._id.toString() !== req.user.userId) {
-          sendNotification(user.fcmToken, {
-            notification: {
-              title: 'You were mentioned',
-              body: content
-            }
-          });
-        }
-      });
-  
+    mentionedUsers.forEach(user => {
+      if (user._id.toString() !== sender) {
+        sendNotification(user.fcmToken, {
+          notification: {
+            title: 'You were mentioned',
+            body: text
+          }
+        });
+      }
+    });
 
     res.status(201).json(message);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+// Other controllers remain unchanged
+
 
 exports.getMessages = async (req, res) => {
   const { chatId } = req.params;
