@@ -250,3 +250,22 @@ exports.sendVoiceMessage = async (req, res) => {
     res.status(500).json({ error: 'Server Error' });
   }
 };
+
+exports.syncMessages = async (req, res) => {
+  const messages = req.body;
+
+  try {
+    // Validate incoming messages array
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    // Bulk insert messages
+    const result = await Message.insertMany(messages, { ordered: false });
+
+    res.status(201).json({ message: 'Messages synced successfully', result });
+  } catch (error) {
+    console.error('Error syncing messages:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};

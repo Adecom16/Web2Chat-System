@@ -1,0 +1,142 @@
+Here is a comprehensive list of the features implemented in the chat application:
+
+### Core Features
+1. **User Authentication and Management:**
+   - User registration with email, username, password, profile picture, and status.
+   - User login and logout.
+   - JWT-based authentication.
+   - Password reset and email verification.
+
+2. **Real-Time Chat:**
+   - One-on-one private messaging.
+   - Group chat creation and management.
+   - Typing indicators.
+   - Read receipts.
+   - Message reactions (like, love, etc.).
+   - Pin/unpin messages.
+   - Delete and edit messages.
+   - Reply to specific messages.
+   - Send and receive text, files, and voice messages.
+
+3. **Groups and Channels:**
+   - Create, edit, and delete groups.
+   - Add/remove members.
+   - Assign roles within groups.
+   - Invite users to groups via email.
+   - Group description management.
+   - Fetch groups and their details.
+
+4. **Friend Requests and Management:**
+   - Send, accept, and decline friend requests.
+   - Remove friends.
+   - Block/unblock users.
+   - View friend list.
+
+5. **File Sharing:**
+   - Upload and share files securely in chats.
+   - View and download shared files.
+
+### Additional Features
+6. **Security Features:**
+   - Content moderation to prevent spam and abusive content.
+   - User reporting and blocking.
+   - Secure file transfer and storage.
+   - User session management with last seen and online status.
+   
+7. **Utility Features:**
+   - Location sharing in real-time.
+   - Event scheduling with reminders.
+   - Polls and surveys creation and participation.
+   - Calendar integration for event management.
+
+8. **Offline Mode:**
+   - Read messages and compose drafts offline.
+   - Sync messages when back online.
+
+9. **Stories:**
+   - Post and view stories similar to Telegram.
+   - React to stories with emojis.
+   - Track story views.
+
+10. **Notifications:**
+    - Real-time notifications for new messages, friend requests, and reactions.
+    - Push notifications for mobile devices.
+
+11. **Emoji Support:**
+    - Use `node-emoji` library for emoji reactions and message content.
+
+12. **Announcements:**
+    - Admins can send announcements to all users or specific groups.
+
+### Admin Features
+13. **Admin Panel:**
+    - Monitor and manage users.
+    - View and moderate content.
+    - Send announcements.
+    - Track and manage reports and blocked users.
+
+### Multi-Language Support
+14. **Localization:**
+    - Support for multiple languages to cater to a global audience.
+
+### Miscellaneous Features
+15. **Socket.io Integration:**
+    - Real-time updates and communication using Socket.io.
+    - Event handling for messages, typing indicators, and calls.
+
+### API Endpoints (For Postman Testing)
+1. **Authentication:**
+   - `POST /api/auth/register` - User registration.
+   - `POST /api/auth/login` - User login.
+   - `POST /api/auth/logout` - User logout.
+   - `POST /api/auth/forgot-password` - Password reset request.
+   - `POST /api/auth/reset-password` - Password reset.
+
+2. **User Management:**
+   - `GET /api/users` - Get all users.
+   - `GET /api/users/:id` - Get user by ID.
+   - `PUT /api/users/:id` - Update user details.
+   - `DELETE /api/users/:id` - Delete user.
+
+3. **Chat Management:**
+   - `POST /api/chats` - Create chat.
+   - `GET /api/chats/:id` - Get chat by ID.
+   - `PUT /api/chats/:id` - Update chat.
+   - `DELETE /api/chats/:id` - Delete chat.
+
+4. **Group Management:**
+   - `POST /api/groups` - Create group.
+   - `GET /api/groups/:id` - Get group by ID.
+   - `PUT /api/groups/:id` - Update group.
+   - `DELETE /api/groups/:id` - Delete group.
+   - `POST /api/groups/:id/members` - Add member to group.
+   - `DELETE /api/groups/:id/members/:memberId` - Remove member from group.
+
+5. **Messages:**
+   - `POST /api/messages` - Send message.
+   - `GET /api/messages/:chatId` - Get messages by chat ID.
+   - `PUT /api/messages/:messageId` - Edit message.
+   - `DELETE /api/messages/:messageId` - Delete message.
+   - `POST /api/messages/:messageId/reply` - Reply to message.
+   - `POST /api/messages/:messageId/read` - Mark message as read.
+   - `POST /api/messages/:messageId/reactions` - Add reaction to message.
+   - `DELETE /api/messages/:messageId/reactions` - Remove reaction from message.
+   - `POST /api/messages/sync` - Sync offline messages.
+   - `POST /api/messages/:messageId/pin` - Pin message.
+   - `POST /api/messages/:messageId/unpin` - Unpin message.
+
+6. **Friend Requests:**
+   - `POST /api/friend-requests` - Send friend request.
+   - `GET /api/friend-requests` - Get friend requests.
+   - `PUT /api/friend-requests/:id` - Accept/decline friend request.
+   - `DELETE /api/friend-requests/:id` - Cancel friend request.
+
+7. **Stories:**
+   - `POST /api/stories` - Post a story.
+   - `GET /api/stories` - Get all stories.
+   - `GET /api/stories/:id` - Get story by ID.
+   - `POST /api/stories/:id/react` - React to story.
+   - `POST /api/stories/:id/view` - View story.
+
+### Note
+This is a comprehensive list based on the features mentioned so far. Depending on the actual implementation and requirements, additional endpoints or features might be present.

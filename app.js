@@ -13,6 +13,9 @@ const messageRoutes = require('./routes/messageRoutes');
 const utilityRoutes = require('./routes/utilityRoutes'); 
 const adminRoutes = require('./routes/adminRoutes');
 const statusRoutes = require('./routes/statusRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
+
+
 const storyRoutes = require('./routes/storyRoutes');
 const friendRequestRoutes = require('./routes/friendRequestRoutes');
 const { jwtMiddleware } = require('./middlewares/authMiddleware');
@@ -57,6 +60,8 @@ app.use('/api/friend-requests', friendRequestRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/stories', storyRoutes);
 app.use('/api/status', statusRoutes);
+app.use('/api/announcement', announcementRoutes);
+
 
 // Serve static files securely
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
