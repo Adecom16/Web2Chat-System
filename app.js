@@ -3,6 +3,8 @@ const http = require('http');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const socketIo = require('socket.io');
+const i18next = require('./config/i18nextConfig');
+const i18nextMiddleware = require('i18next-express-middleware');
 const User = require('./models/User');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
@@ -16,8 +18,6 @@ const pollRoutes = require('./routes/pollRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const statusRoutes = require('./routes/statusRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
-
-
 const storyRoutes = require('./routes/storyRoutes');
 const friendRequestRoutes = require('./routes/friendRequestRoutes');
 const { jwtMiddleware } = require('./middlewares/authMiddleware');
@@ -37,6 +37,8 @@ app.use(helmet()); // Add security headers
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(i18nextMiddleware.handle(i18next));
+
 
 connectDB();
 
@@ -66,12 +68,10 @@ app.use('/api/stories', storyRoutes);
 app.use('/api/status', statusRoutes);
 app.use('/api/announcement', announcementRoutes);
 
-
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
-
 
 // Serve static files securely
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -93,10 +93,25 @@ io.on('connection', (socket) => {
   socket.on('sendMessage', async (message) => {
     const newMessage = await saveMessageToDb(message);
     io.to(message.chatId).emit('message', newMessage);
+    io.to(message.chatId).emit('deliveryReceipt', { messageId: newMessage._id, status: 'delivered' });
   });
 
   socket.on('typing', ({ userId, chatId }) => {
     io.to(chatId).emit('typing', { userId, chatId });
+  });
+
+  socket.on('privateMessage', async ({ senderId, receiverId, message }) => {
+    const newMessage = await savePrivateMessageToDb(senderId, receiverId, message);
+    io.to(receiverId).emit('privateMessage', newMessage);
+  });
+
+  socket.on('sendNotification', (notification) => {
+    io.to(notification.userId).emit('notification', notification);
+  });
+
+  socket.on('updateLocation', async ({ userId, location }) => {
+    const updatedUser = await updateUserLocation(userId, location);
+    io.emit('locationUpdate', updatedUser);
   });
 
   // Audio/Video call events
@@ -124,6 +139,10 @@ io.on('connection', (socket) => {
     io.emit('storyViewed', updatedStory);
   });
 
+  socket.on('messageRead', ({ userId, messageId }) => {
+    io.to(userId).emit('messageRead', { messageId, status: 'read' });
+  });
+
   socket.on('disconnect', () => {
     console.log('Client disconnected');
     User.findByIdAndUpdate(socket.request.user.id, { lastSeen: new Date() }, { new: true }).exec();
@@ -132,6 +151,10 @@ io.on('connection', (socket) => {
 
 const saveMessageToDb = async (message) => {
   // Implementation to save message to database
+};
+
+const savePrivateMessageToDb = async (senderId, receiverId, message) => {
+  // Implementation to save private message to database
 };
 
 const saveStoryToDb = async (storyData) => {
@@ -180,6 +203,18 @@ const viewStoryDb = async (viewData) => {
   } catch (error) {
     console.error('Error viewing story:', error);
     throw new Error('Error viewing story');
+  }
+};
+
+const updateUserLocation = async (userId, location) => {
+  try {
+    const user = await User.findById(userId);
+    user.location = location;
+    await user.save();
+    return user;
+  } catch (error) {
+    console.error('Error updating user location:', error);
+    throw new Error('Error updating user location');
   }
 };
 

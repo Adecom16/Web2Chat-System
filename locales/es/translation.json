@@ -1,0 +1,9 @@
+{
+    "welcome": "Bienvenido",
+    "login": {
+      "username": "Nombre de usuario",
+      "password": "Contraseña",
+      "submit": "Iniciar sesión"
+    }
+  }
+  

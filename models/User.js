@@ -23,7 +23,6 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: ['user']
   },
-  
   statusMessage: {
     type: String
   },
@@ -62,7 +61,15 @@ const UserSchema = new mongoose.Schema({
     fcmToken: {
       type: String,
     }
-  }
+  },
+  reports: [
+    {
+      reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      reason: { type: String },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
+  blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
