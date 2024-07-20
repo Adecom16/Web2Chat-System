@@ -1,27 +1,25 @@
 const express = require('express');
 const {
   createGroup,
-  getGroups,
-  addMemberWithRole,
-  inviteToGroup,
-  updateGroupDescription
+  editGroup,
+  deleteGroup,
+  addMember,
+  removeMember,
+  assignRole,
+  inviteUser,
+  getGroupDetails,
 } = require('../controllers/groupController');
 const { jwtMiddleware } = require('../middlewares/authMiddleware');
+
 const router = express.Router();
 
-// Create a new group
-router.post('/create', jwtMiddleware, createGroup);
-
-// Get groups for the logged-in user
-router.get('/', jwtMiddleware, getGroups);
-
-// Add a member with a role to a group
-router.post('/:groupId/add-member', jwtMiddleware, addMemberWithRole);
-
-// Invite a member to a group via email
-router.post('/:groupId/invite', jwtMiddleware, inviteToGroup);
-
-// Update group description
-router.put('/:groupId/description', jwtMiddleware, updateGroupDescription);
+router.post('/', jwtMiddleware, createGroup);
+router.put('/:groupId', jwtMiddleware, editGroup);
+router.delete('/:groupId', jwtMiddleware, deleteGroup);
+router.post('/:groupId/members', jwtMiddleware, addMember);
+router.delete('/:groupId/members/:memberId', jwtMiddleware, removeMember);
+router.put('/:groupId/members/:memberId/role', jwtMiddleware, assignRole);
+router.post('/:groupId/invite', jwtMiddleware, inviteUser);
+router.get('/:groupId', jwtMiddleware, getGroupDetails);
 
 module.exports = router;

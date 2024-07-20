@@ -1,33 +1,36 @@
 const mongoose = require('mongoose');
 
-const GroupSchema = new mongoose.Schema({
+const groupSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   description: {
-    type: String
+    type: String,
   },
-  members: [{
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+  members: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      role: {
+        type: String,
+        enum: ['admin', 'member'],
+        default: 'member',
+      },
     },
-    role: {
-      type: String,
-      enum: ['admin', 'moderator', 'member'],
-      default: 'member'
-    }
-  }],
-  invitations: [{
-    email: {
-      type: String
-    },
-    inviteCode: {
-      type: String,
-      unique: true
-    }
-  }]
-}, { timestamps: true });
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-module.exports = mongoose.model('Group', GroupSchema);
+const Group = mongoose.model('Group', groupSchema);
+
+module.exports = Group;

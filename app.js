@@ -10,7 +10,9 @@ const userRoutes = require('./routes/userRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const messageRoutes = require('./routes/messageRoutes');
-const utilityRoutes = require('./routes/utilityRoutes'); 
+const locationRoutes = require('./routes/locationRoutes');
+const eventRoutes = require('./routes/eventRoutes');
+const pollRoutes = require('./routes/pollRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const statusRoutes = require('./routes/statusRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
@@ -55,12 +57,20 @@ app.use('/api/users', userRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
-app.use('/api/utilities', utilityRoutes); 
+app.use('/api/location', locationRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/polls', pollRoutes);
 app.use('/api/friend-requests', friendRequestRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/stories', storyRoutes);
 app.use('/api/status', statusRoutes);
 app.use('/api/announcement', announcementRoutes);
+
+
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 
 // Serve static files securely

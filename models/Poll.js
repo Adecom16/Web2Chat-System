@@ -1,12 +1,38 @@
-// models/Poll.js
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const PollSchema = new Schema({
-  question: String,
-  options: [{ text: String, votes: Number }],
-  createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
-  participants: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+const pollSchema = new mongoose.Schema({
+  question: {
+    type: String,
+    required: true,
+  },
+  options: [
+    {
+      text: {
+        type: String,
+        required: true,
+      },
+      votes: {
+        type: Number,
+        default: 0,
+      },
+    },
+  ],
+  chat: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chat',
+    required: true,
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model('Poll', PollSchema);
+const Poll = mongoose.model('Poll', pollSchema);
+
+module.exports = Poll;
