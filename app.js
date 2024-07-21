@@ -26,6 +26,8 @@ const upload = require('./middlewares/fileUploadMiddleware');
 const helmet = require('helmet');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swaggerConfig');
 require('dotenv').config();
 
 const app = express();
@@ -72,6 +74,8 @@ app.use((req, res, next) => {
   req.io = io;
   next();
 });
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Serve static files securely
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
