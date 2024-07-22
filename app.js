@@ -3,8 +3,10 @@ const http = require('http');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const socketIo = require('socket.io');
-const i18next = require('./config/i18nextConfig');
-const i18nextMiddleware = require('i18next-express-middleware');
+// const i18next = require('./config/i18nextConfig');
+// const i18next = require('i18next');
+// const i18nextMiddleware = require('i18next-express-middleware');
+// const Backend = require('i18next-node-fs-backend');
 const User = require('./models/User');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
@@ -39,7 +41,7 @@ app.use(helmet()); // Add security headers
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(i18nextMiddleware.handle(i18next));
+// app.use(i18nextMiddleware.handle(i18next));
 
 
 connectDB();
